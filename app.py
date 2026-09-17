@@ -4,6 +4,18 @@ import tensorflow as tf
 import numpy as np
 from PIL import Image
 
+import os
+import streamlit as st
+import kagglehub
+
+# Configurar credenciales desde st.secrets si existen
+if "KAGGLE_USERNAME" in st.secrets and "KAGGLE_KEY" in st.secrets:
+    os.environ["KAGGLE_USERNAME"] = st.secrets["KAGGLE_USERNAME"]
+    os.environ["KAGGLE_KEY"] = st.secrets["KAGGLE_KEY"]
+
+st.set_page_config(page_title="Clasificador con Kaggle Models", page_icon="🖼️")
+st.title("🖼️ Clasificador de Imágenes con Kaggle Models")
+
 # Configuración de la interfaz
 st.set_page_config(page_title="Clasificador con Kaggle Models", page_icon="🖼️")
 st.title("Clasificador de Imágenes con Kaggle Models Estudiante: Bryan Gustavo Paredes")
