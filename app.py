@@ -6,7 +6,7 @@ from PIL import Image
 
 # Configuración de página
 st.set_page_config(page_title="Clasificador de Imágenes", page_icon="🖼️")
-st.title("🖼️ Clasificador de Imágenes con MobileNetV2")
+st.title("🖼️ Clasificador de Imágenes con MobileNetV2 Estudiante Bryan Gustavo Paredes")
 st.write("Carga una imagen y el modelo clasificará lo que observa usando pesos de ImageNet.")
 
 # Cargar el modelo preentrenado directamente sin API Keys
