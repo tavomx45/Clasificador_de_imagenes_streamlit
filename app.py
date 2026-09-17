@@ -6,7 +6,7 @@ from PIL import Image
 
 # Configuración de la interfaz
 st.set_page_config(page_title="Clasificador con Kaggle Models", page_icon="🖼️")
-st.title("Clasificador de Imágenes con Kaggle Models Estudiante: Bryan Gustavo Paredes)
+st.title("Clasificador de Imágenes con Kaggle Models Estudiante: Bryan Gustavo Paredes")
 st.write("Carga una imagen y clasifícala usando el modelo preentrenado MobileNetV2 de Kaggle.")
 
 
