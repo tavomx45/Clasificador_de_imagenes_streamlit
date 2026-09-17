@@ -1,5 +1,5 @@
 streamlit
-kagglehub
-tensorflow
+torch
+torchvision
 pillow
-numpy
+requests
