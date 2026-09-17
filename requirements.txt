@@ -1,1 +1,5 @@
-
+streamlit
+kagglehub
+tensorflow
+pillow
+numpy
