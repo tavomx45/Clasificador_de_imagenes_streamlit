@@ -21,11 +21,10 @@ st.set_page_config(page_title="Clasificador con Kaggle Models", page_icon="🖼�
 st.title("Clasificador de Imágenes con Kaggle Models Estudiante: Bryan Gustavo Paredes")
 st.write("Carga una imagen y clasifícala usando el modelo preentrenado MobileNetV2 de Kaggle.")
 
-
 @st.cache_resource
 def load_kaggle_model():
-    # Descarga la última versión del modelo MobileNetV2 desde Kaggle
-    model_path = kagglehub.model_download("google/mobilenet-v2/tfLite/100-224-feature-vector")
+    # Ruta exacta corregida en Kaggle Models:
+    model_path = kagglehub.model_download("google/mobilenet-v2/tfLite/100-224-feature-vector/1")
     return model_path
 
 st.info("Descargando/Cargando modelo desde Kaggle Models...")
