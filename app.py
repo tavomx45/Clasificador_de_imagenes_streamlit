@@ -26,7 +26,7 @@ uploaded_file = st.file_uploader("Elige una imagen (JPG, JPEG, PNG)...", type=["
 
 if uploaded_file is not None:
     image = Image.open(uploaded_file).convert('RGB')
-    st.image(image, caption="Imagen seleccionada", use_column_width=True)
+    st.image(image, caption="Imagen seleccionada", use_container_width=True)
     
     if st.button("Clasificar Imagen"):
         with st.spinner("Analizando la imagen..."):
