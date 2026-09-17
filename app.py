@@ -1,77 +1,47 @@
 import streamlit as st
-import kagglehub
-import tensorflow as tf
-import numpy as np
+import torch
+import torchvision.transforms as transforms
+from torchvision.models import mobilenet_v2, MobileNet_V2_Weights
 from PIL import Image
 
-import os
-import streamlit as st
-import kagglehub
+# Configuración de página
+st.set_page_config(page_title="Clasificador de Imágenes", page_icon="🖼️")
+st.title("🖼️ Clasificador de Imágenes con MobileNetV2")
+st.write("Carga una imagen y el modelo clasificará lo que observa usando pesos de ImageNet.")
 
-# Configurar credenciales desde st.secrets si existen
-if "KAGGLE_USERNAME" in st.secrets and "KAGGLE_KEY" in st.secrets:
-    os.environ["KAGGLE_USERNAME"] = st.secrets["KAGGLE_USERNAME"]
-    os.environ["KAGGLE_KEY"] = st.secrets["KAGGLE_KEY"]
-
-st.set_page_config(page_title="Clasificador con Kaggle Models", page_icon="🖼️")
-st.title("🖼️ Clasificador de Imágenes con Kaggle Models")
-
-# Configuración de la interfaz
-st.set_page_config(page_title="Clasificador con Kaggle Models", page_icon="🖼️")
-st.title("Clasificador de Imágenes con Kaggle Models Estudiante: Bryan Gustavo Paredes")
-st.write("Carga una imagen y clasifícala usando el modelo preentrenado MobileNetV2 de Kaggle.")
-
+# Cargar el modelo preentrenado directamente sin API Keys
 @st.cache_resource
-def load_kaggle_model():
-    # Ruta exacta corregida en Kaggle Models:
-    model_path = kagglehub.model_download("google/mobilenet-v2/tfLite/100-224-feature-vector/1")
-    return model_path
+def load_model():
+    weights = MobileNet_V2_Weights.DEFAULT
+    model = mobilenet_v2(weights=weights)
+    model.eval()  # Modo evaluación
+    return model, weights
 
-st.info("Descargando/Cargando modelo desde Kaggle Models...")
-model_path = load_kaggle_model()
-st.success("¡Modelo cargado correctamente desde Kaggle Hub!")
+model, weights = load_model()
+preprocess = weights.transforms()
+categories = weights.meta["categories"]
 
-@st.cache_data
-def get_labels():
-    labels_path = tf.keras.utils.get_file(
-        'ImageNetLabels.txt',
-        'https://storage.googleapis.com/download.tensorflow.org/data/ImageNetLabels.txt'
-    )
-    with open(labels_path, 'r') as f:
-        return [line.strip() for line in f.readlines()]
-
-labels = get_labels()
-
-
-uploaded_file = st.file_uploader("Elige una imagen (JPG/PNG)...", type=["jpg", "jpeg", "png"])
+# Interfaz para subir imagen
+uploaded_file = st.file_uploader("Elige una imagen (JPG, JPEG, PNG)...", type=["jpg", "jpeg", "png"])
 
 if uploaded_file is not None:
     image = Image.open(uploaded_file).convert('RGB')
-    st.image(image, caption="Imagen cargada", use_column_width=True)
+    st.image(image, caption="Imagen seleccionada", use_column_width=True)
     
     if st.button("Clasificar Imagen"):
         with st.spinner("Analizando la imagen..."):
-            # Preprocesamiento para MobileNetV2 (224x224)
-            img_resized = image.resize((224, 224))
-            img_array = np.array(img_resized) / 255.0
-            img_array = np.expand_dims(img_array, axis=0).astype(np.float32)
+            # Preprocesar imagen para el modelo
+            input_tensor = preprocess(image).unsqueeze(0)
             
-            # Cargar y ejecutar con TFLite
-            interpreter = tf.lite.Interpreter(model_path=f"{model_path}/1.tflite")
-            interpreter.allocate_tensors()
+            # Hacer la predicción
+            with torch.no_grad():
+                output = model(input_tensor)
+                probabilities = torch.nn.functional.softmax(output[0], dim=0)
             
-            input_details = interpreter.get_input_details()
-            output_details = interpreter.get_output_details()
+            # Obtener el resultado con mayor probabilidad
+            top_prob, top_catid = torch.topk(probabilities, 1)
+            category = categories[top_catid[0]]
+            confidence = top_prob[0].item() * 100
             
-            interpreter.set_tensor(input_details[0]['index'], img_array)
-            interpreter.invoke()
-            
-            output_data = interpreter.get_tensor(output_details[0]['index'])
-            predicted_index = np.argmax(output_data[0])
-            
-            # Resultado
-            predicted_label = labels[predicted_index]
-            confidence = np.max(tf.nn.softmax(output_data[0])) * 100
-            
-            st.success(f"**Predicción:** {predicted_label.capitalize()}")
-            st.metric("Nivel de confianza", f"{confidence:.2f}%")
+            st.success(f"**Predicción:** {category.capitalize()}")
+            st.metric("Nivel de Confianza", f"{confidence:.2f}%")
